@@ -1,0 +1,25 @@
+DECLARE @tmptbCount INT
+DECLARE @free_cash INT
+DECLARE @free_cash_SUM INT
+
+
+
+SELECT MAX( nTBCount ), sumCash
+FROM (
+	SELECT X.nTbCount, X.nFree_cash, X.nCashType, sum( y.nCash+ y.nFree_cash ) AS sumCash
+	FROM tb_Account_cash X
+	INNER JOIN tb_Account_cash Y ON X.nTbCount >= Y.nTbCount 
+	GROUP BY X.nTbCount, X.free_cash, x.nCashType
+	HAVING ISNULL(sum(Y.free_cash),0) <= 200
+) AS A
+
+
+SELECT @tmptbCount ,@free_cash ,@free_cash_SUM INT
+
+
+
+
+select * from tb_account_cash order by free_CASH_LIFEtIME ASC
+
+nCashType 추가 - 1:유료캐쉬 2:무료캐쉬
+				

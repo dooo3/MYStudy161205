@@ -1,0 +1,75 @@
+엠포커 일일 채널별 족보별 잭팟 당첨자 리스트
+
+
+엠게임 포커 
+SQL Server 용 
+ 게임로그를 StartTime 부터 EndTime 까지 loop 하여 sql 실행 
+ 임시테이블 사용함 
+ 게임로그 테이블을 순차적으로 참조하기 때문에 장기간으로 설정하여 실행하면 장비에 부하를 가중시킬 수 있으니 주의 요망 
+
+[편집] 11.08.01 수정사항 
+WAITFOR 를 이용하여 부하를 줄임 
+channel_list 로 join 을 통하여 service_id 범위 연산을 피함 service_id 는 서비스에 따라 변할 수 있음 
+szKind 사용 
+
+
+
+CREATE TABLE ##temp
+( 
+	dt datetime,
+	id VARCHAR(20),
+	channel VARCHAR(20),
+	rank VARCHAR(20),
+	money BIGINT
+)
+ 
+DECLARE @dtTime datetime
+DECLARE @SQL VARCHAR(1024)
+ 
+SET @dtTime = <start_time,datetime, getdate()>
+ 
+while <end_time,datetime, getdate()> >= @dtTime
+BEGIN
+	SET @SQL ='
+	insert into ##temp
+	select 
+		dtTime,
+		szID,
+		CASE B.szKind 	
+			WHEN ''1''  THEN ''하수'' 
+			WHEN ''2'' THEN ''중수'' 
+			WHEN ''3'' THEN ''고수'' 
+			WHEN ''3'' THEN ''세미프로''
+			WHEN ''4'' THEN ''프로'' 
+			WHEN ''5'' THEN ''스페셜''
+			WHEN ''6'' THEN ''자유'' 
+		END as channel,
+		case fn_StrPart( szHHandRank, '' '', 0)
+			when ''3RD'' then ''서드''
+			when ''2ND'' then ''세컨''
+			when ''GOLF'' then ''골프''
+			when ''4P'' then ''포카드''
+			when ''STFL'' then ''스티플''
+			when ''BSTFL'' then ''백스티플''
+			when ''RSTFL'' then ''로티플''
+			else ''하자''
+		end as rank,
+		nAlterMoney
+	from tb_log_user_game_'+ CONVERT(VARCHAR, @dtTime, 112)+' as A, newpoker..tb_game_channellist as B
+	where A.nServiceID = B.nGameCode AND szCardInfo = ''[잭팟]'''
+ 
+	EXEC( @SQL )
+--	select @SQL
+ 
+	SET @dtTime = @dtTime + 1
+ 
+	-- Set DelayTime  
+	WAITFOR DELAY '00:00:01'
+END
+ 
+ 
+SELECT * FROM ##temp
+ORDER BY 1
+ 
+ 
+DROP TABLE ##temp

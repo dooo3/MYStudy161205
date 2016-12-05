@@ -1,0 +1,249 @@
+// Network01.cpp : 콘솔 응용 프로그램에 대한 진입점을 정의합니다.
+//
+
+#include "stdafx.h"
+#include <winsock2.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+#define MAX_BUFFER_SIZE 512
+
+// 소켓 정보 저장을 위한 구조체
+typedef struct
+{
+	SOCKET sock;
+	char buffer[MAX_BUFFER_SIZE + 1];
+	int recvBytes;
+	int sendBytes;
+} SOCKET_INFO;
+
+int g_nTotalSockets = 0;
+
+SOCKET_INFO* g_aSocketInfoArray[FD_SETSIZE];
+
+// 소켓 관리 함수
+BOOL AddSocketInfo(SOCKET clientSocket);
+void RemoveSocketInfo(int nIndex);
+
+// 오류 출력 함수
+void err_quit(char* msg);
+void err_display(char* msg);
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+	int retValue;
+
+	// 윈속 초기화
+	WSADATA wsa;
+	if(WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+		return -1;
+
+	// 소켓 생성
+	SOCKET listenSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if(listenSocket == INVALID_SOCKET)
+		err_quit("socket()");
+
+	// bind()
+	SOCKADDR_IN serverAddr;
+	memset(&serverAddr, 0, sizeof(serverAddr));
+	serverAddr.sin_family = AF_INET;
+	serverAddr.sin_port = htons(5001);
+	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	retValue = bind(listenSocket, (SOCKADDR*)&serverAddr, sizeof(serverAddr));
+	if(retValue == SOCKET_ERROR)
+		err_quit("bind()");
+
+	//listen()
+	retValue = listen(listenSocket, SOMAXCONN);
+	if(retValue == SOCKET_ERROR)
+		err_quit("listen()");
+
+	// 넌블로킹 소켓으로 전환
+	unsigned long on = TRUE;
+	retValue = ioctlsocket(listenSocket, FIONBIO, &on);
+	if(retValue == SOCKET_ERROR)
+		err_display("ioctlsocket()");
+
+	// 통신에 사용할 변수
+	FD_SET rset;
+	FD_SET wset;
+	SOCKET clientSocket;
+	SOCKADDR_IN clientAddr;
+	int nAddrLength;
+
+	while(1)
+	{
+		// 소켓 셋 초기화
+		FD_ZERO(&rset);
+		FD_ZERO(&wset);
+
+		// 소켓 셋 지정
+		FD_SET(listenSocket, &rset);
+
+		for(int i = 0; i < g_nTotalSockets; ++i)
+		{
+			if(g_aSocketInfoArray[i]->recvBytes > g_aSocketInfoArray[i]->sendBytes)
+				FD_SET(g_aSocketInfoArray[i]->sock, &wset);
+			else
+				FD_SET(g_aSocketInfoArray[i]->sock, &rset);
+		}
+
+		// select()
+		retValue = select(0, &rset, &wset, NULL, NULL);
+		if(retValue == SOCKET_ERROR)
+			err_quit("select()");
+
+		// 소켓 셋 검사 #1 : 클라이언트 접속
+		if(FD_ISSET(listenSocket, &rset))
+		{
+			nAddrLength = sizeof(clientAddr);
+			clientSocket = accept(listenSocket, (SOCKADDR*)&clientAddr, &nAddrLength);
+			if(clientSocket == INVALID_SOCKET)
+			{
+				if(WSAGetLastError() != WSAEWOULDBLOCK)
+					err_display("accept()");
+			}
+			else
+			{
+				printf("[TCP 서버] 클라이언트 접속: IP 주소 = %s, 포트번호 = %d\n",
+					inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
+
+				if(AddSocketInfo(clientSocket) == FALSE)
+				{
+					printf("[TCP 서버] 클라이언트 접속을 해제 합니다n");
+					closesocket(clientSocket);
+				}
+			}
+		}
+
+		// 소켓 셋 검사 #2 : 데이터 통신
+		for(int i = 0; i < g_nTotalSockets; ++i)
+		{
+			SOCKET_INFO* pInfo = g_aSocketInfoArray[i];
+			if(FD_ISSET(pInfo->sock, &rset))
+			{
+				// 데이터받기
+				retValue = recv(pInfo->sock, pInfo->buffer, MAX_BUFFER_SIZE, 0);
+				if(retValue == SOCKET_ERROR)
+				{
+					if(WSAGetLastError() != WSAEWOULDBLOCK)
+					{
+						err_display("recv()");
+						RemoveSocketInfo(i);
+						continue;
+					}
+				}
+				else if(retValue == 0)
+				{
+					RemoveSocketInfo(i);
+					continue;
+				}
+				else
+				{
+					pInfo->recvBytes = retValue;
+
+					// 받은 데이터 출력
+					SOCKADDR_IN sockAddr;
+					int nAddrLength = sizeof(sockAddr);
+					getpeername(pInfo->sock, (SOCKADDR*)&sockAddr, &nAddrLength);
+
+					pInfo->buffer[retValue] = '\0';
+					printf("[TCP/%s:%d] %s\n",
+						inet_ntoa(sockAddr.sin_addr), ntohs(sockAddr.sin_port), pInfo->buffer);
+				}
+			}
+
+			if(FD_ISSET(pInfo->sock, &wset))
+			{
+				// 데이터보내기
+				retValue = send(pInfo->sock, pInfo->buffer + pInfo->sendBytes,
+					pInfo->recvBytes - pInfo->sendBytes, 0);
+
+				if(retValue == SOCKET_ERROR)
+				{
+					if(WSAGetLastError() != WSAEWOULDBLOCK)
+					{
+						err_display("send()");
+						RemoveSocketInfo(i);
+						continue;
+					}
+				}
+
+				pInfo->sendBytes += retValue;
+				if(pInfo->recvBytes == pInfo->sendBytes)
+					pInfo->recvBytes = pInfo->sendBytes = 0;
+			}
+		}
+	}
+
+	return 0;
+}
+
+BOOL AddSocketInfo(SOCKET clientSocket)
+{
+	if(g_nTotalSockets >= (FD_SETSIZE - 1))
+	{
+		printf("[오류] 소켓 정보를 추가할 수 없습니다.\n");
+		return FALSE;
+	}
+
+	SOCKET_INFO* pSocketInfo = new SOCKET_INFO;
+	if(pSocketInfo == NULL)
+	{
+		printf("[오류] 메모리가 부족합니다.\n");
+		return FALSE;
+	}
+
+	pSocketInfo->sock = clientSocket;
+	pSocketInfo->recvBytes = 0;
+	pSocketInfo->sendBytes = 0;
+
+	g_aSocketInfoArray[g_nTotalSockets++] = pSocketInfo;
+
+	return TRUE;
+}
+
+void RemoveSocketInfo(int nIndex)
+{
+	SOCKET_INFO* pInfo = g_aSocketInfoArray[nIndex];
+
+	// 클라이언트 정보 얻기
+	SOCKADDR_IN socketAddr;
+	int nAddrLength = sizeof(socketAddr);
+	getpeername(pInfo->sock, (SOCKADDR*)&socketAddr, &nAddrLength);
+	printf("[TCP 서버] 클라이언트 종료: IP 주소 = %s, 포트번호 = %d\n",
+		inet_ntoa(socketAddr.sin_addr), ntohs(socketAddr.sin_port));
+
+	closesocket(pInfo->sock);
+	delete pInfo;
+
+	for(int i = nIndex; i < g_nTotalSockets; ++i)
+		g_aSocketInfoArray[i] = g_aSocketInfoArray[i + 1];
+
+	g_nTotalSockets--;
+}
+
+void err_quit(char* msg)
+{
+	LPVOID lpMsgBuf;
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		NULL, WSAGetLastError(),
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR)&lpMsgBuf, 0, NULL);
+	MessageBox(NULL, (LPCTSTR)lpMsgBuf, msg, MB_ICONERROR);
+	LocalFree(lpMsgBuf);
+	exit(-1);
+}
+
+void err_display(char* msg)
+{
+	LPVOID lpMsgBuf;
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		NULL, WSAGetLastError(),
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR)&lpMsgBuf, 0, NULL);
+	printf("[%s] %s\n", msg, (LPCTSTR)lpMsgBuf);
+	LocalFree(lpMsgBuf);
+}

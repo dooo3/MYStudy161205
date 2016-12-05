@@ -1,0 +1,22 @@
+int nTmpIndex = 0;
+nTmpIndex = index;                //header의 lenght의 인덱스를 저장해놓는다 그럼 밑에서 저장해도 상관없음
+//memcpy(sendBuf+index,&PACKET_LENGHT,sizeof(int));
+index += sizeof(int);
+
+
+		//----------------------------------------데이터
+		sendBuf[index++] = CS_CHAT_MSG_NTY;
+		PACKET_LENGHT++;
+
+		memcpy(sendBuf+index,szID,MAX_ID);
+		index += MAX_ID;
+		PACKET_LENGHT += MAX_ID;
+
+		memcpy(sendBuf+index,szMsg,MAX_MSG);
+		index += MAX_MSG;
+		PACKET_LENGHT += MAX_MSG;
+		//----------------------------------------데이터
+//실제 데이터의 LENGHT를 저장한다.
+
+//저장해 놓았던 header의 lenght인덱스를 가져와서 header에 붙인다
+memcpy(sendBuf+nTmpIndex,&PACKET_LENGHT,sizeof(int));

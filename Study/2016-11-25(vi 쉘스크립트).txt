@@ -1,0 +1,29 @@
+2016 11 25(vi 쉘 스크립트)
+
+1. testSh 실행하는 위치에 Log 디렉토리가 없다면 만들기 명령어 추가.
+
+2. Log디렉토리 log_20161125.log
+
+3.
+
+#!/bin/sh
+
+today_date=$(date "+%Y%m%d")
+tomorrow_date=$(date --date=$today_date '+%Y%m%d' -d '1 day')
+
+if [ -d ./Log ]
+then
+  echo "Log exist"
+else
+  echo "Log empty"
+  mkdir Log
+fi
+
+LOG=./Log/log_$today_date.log
+
+
+find ./ ! \( -path './foo/bar' -prune \) -type f -newermt $today_date ! -newermt $tomorrow_date>>${LOG}
+
+tar zcvf backup$today_date.tar.gz `cat ${LOG}`
+
+#scp ./backup$today_date.tar.gz gunman@192.168.11.96:/home/gunman/gold/

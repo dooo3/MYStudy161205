@@ -1,0 +1,45 @@
+SELECT X.nTbCount , X.free_cash ,@tmpTotalCash = sum(Y.free_cash) --AS total
+	FROM tb_Account_cash X 
+	INNER JOIN tb_Account_cash Y ON X.nTbCount >= Y.nTbCount
+	GROUP BY X.nTbCount,X.free_cash
+	ORDER BY X.nTbCount 
+
+
+
+SELECT X.A, X.B , sum(Y.B)
+FROM TB X
+INNER JOIN TB Y ON X.A>Y.A
+GROUP BY X.A, X.B
+ORDER BY X.nTbCount 
+
+
+
+
+--------------------------------
+만약 합을 구하는데 특정값 만큼만 더해서 얻고 싶으면 HAVING을 넣어서 해결했음;;
+
+EX) @nUseCash  = naverAccount만들 때 얼마 만큼을 쓸 수 있는지 확인
+--------------------------------
+
+
+
+
+DECLARE @tmpTotalCash INT
+	DECLARE @tmptbCount INT
+	DECLARE @tmpFree_Cash INT
+	
+	SET @tmpTotalCash = 0
+	
+	 
+	
+	
+--여기서 0 이엿다가
+	SELECT @tmptbCount=X.nTbCount , @tmpFree_Cash=X.free_cash, @tmpTotalCash = ISNULL(sum(Y.free_cash),0) --AS total
+	FROM tb_Account_cash X
+	--INNER JOIN ON @tmpTotalCash < 200
+	INNER JOIN tb_Account_cash Y ON X.nTbCount >= Y.nTbCount 
+	GROUP BY X.nTbCount,X.free_cash
+	HAVING ISNULL(sum(Y.free_cash),0) <= 300
+	--ORDER BY X.nTbCount
+	SELECT @tmpTotalCash AS tmpTotalCash ,@tmptbCount AS tmptbCount ,@tmpFree_Cash AS tmpFree_Cash
+

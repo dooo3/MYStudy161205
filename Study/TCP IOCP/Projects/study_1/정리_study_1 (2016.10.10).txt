@@ -1,0 +1,33 @@
+2016-10-07 tcp/ip 서버(패킷으로 데이터 주고받기)
+
+char형은 
+memcpy(sendBuf_login+index_login,szID_login,MAX_ID);
+		index_login +=MAX_ID;
+로 받음
+
+
+int형 자료는
+memcpy(&nAge_login , buf+index, sizeof(int);
+index += sizeof(int);
+로 받으면 됨
+
+
+
+
+//#define CS_CHAT_MSG_NTY		(BYTE(0x01))	// 요청 _REQ , 통지 _NTY, 응답 _ACK
+
+const static int CS_CHAT_MSG_NTY		=	((BYTE)0x01);
+/*
+	char szID[20];
+	char szMsg[512];
+*/
+
+const static int CS_LOGIN_REQ		=	((BYTE)0x02);
+/*
+	char szID[20];
+	char szPasswd[128];
+	int  nAge;
+	char szNickName[20];
+*/
+
+패킷을 구조체형태로 만들어서 관리

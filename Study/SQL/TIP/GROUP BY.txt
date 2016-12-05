@@ -1,0 +1,46 @@
+
+http://ryu1hwan.tistory.com/entry/SQL%EB%AC%B8-%EA%B8%B0%EC%B4%88%EC%97%90%EC%84%9C%EC%A4%91%EA%B8%89%EA%B9%8C%EC%A7%80L4GROUP-BY%EB%AC%B8
+
+머릿말
+
+오늘은 GROUP BY문에 대해서 설명을 하도록 하겠습니다.
+간단한 사이트를 개발할 때는, 단순히 INSERT, UPDATE, SELECT문만으로 구현이 가능합니다.
+하지만, 조금만 사이트의 규모가 커지면, GROUP BY문을 쉴새없이 사용하게 됩니다.
+GROUP BY를 제대로 사용하지 못한다면, 개발자로서 한 걸음 나가는데, 큰 무리가 있습니다.
+GROUP BY의 원리와 사용법을 제대로 익힐 수 있는 시간이 되기를 기대하며 시작하도록 하겠습니다
+
+
+Lesson 4 : GROUP BY
+
+GROUP BY문은 동일한 값을 가진 데이터를 집계해서 조회하고자 할 때 사용하는 문장이다.
+조회, 분석용 SQL에서 가장 많이 사용되는 구문이다.
+초급 개발자들을 보면, GROUP BY문을 사용할 때, 이렇게 쓰는건가, 저렇게 쓰는건가 하면서 머뭇거리면서 
+사용하는 경우가 종종 있다. 절대 그런일이 없도록 심도있게 공부하고 익히기를 바란다.
+
+
+
+작성방법
+
+SELECT  T1.REGION_GD
+FROM    SQL_TEST.CD_REGION T1
+GROUP BY T1.REGION_GD
+
+- 집계할 컬럼을 GROUP BY절 뒤에 적어준다.
+- SELECT절에는 GROUP BY에 명시된 컬럼만 사용할 수 있다.
+- GROUP BY는 WHERE절과 ORDER BY절 사이에 위치한다.
+
+
+기초이해
+                                    
+-- 일반 SELECT문장
+
+SELECT                                                                                                                                                                                                                                                                                                                                                                                                                                             
+        ,T1.REGION_CD
+FROM    SQL_TEST.MA_STORE T1	
+
+
+-- REGION_CD별 데이터를 GROUP BY
+
+SELECT  T1.REGION_CD
+FROM    SQL_TEST.MA_STORE T1
+GROUP BY T1.REGION_CD

@@ -1,0 +1,20 @@
+인덱스 공부
+
+2016 - 11- 03
+
+1.복합키 a,b 중에 첫번째 복합키가 왜 중요한지~
+
+ex) CREATE INDEX Idx TB A ColA,ColB
+
+----속도차이 확인해보기
+
+SELECT FROM TB_A WHERE ColA = ???
+
+SELECT FROM TB_A WHERE ColB = ???
+
+SELECT FROM TB_A WHERE ColA = ??? 
+
+----속도차이 확인해보기
+
+2.covered Index가 어떤건지
+

@@ -1,0 +1,55 @@
+DWORD WINAPI Check_Data(LPVOID arg)
+{
+		int index = 0;
+		int nPacketType = buf[index++];
+		
+	
+		switch( nPacketType )
+		{
+
+			case CS_CHAT_MSG_NTY:
+				
+				for(;index<retval;)
+				{
+					//index의 길이가 retval보다 커질때까지?
+						//데이터가 1개있을때
+						////////////////////////////////////
+							char szID[MAX_ID+1] = {0x0,};
+							char szMsg[MAX_MSG+1] = {0x0,};
+
+							//if(buf[1] == PACKET_HEADER_START1 && buf[2] == PACKET_HEADER_START2)
+								//memcpy(&PACKET_HEADER_START1,buf+index,sizeof(int));
+								index+= sizeof(int);
+
+								//memcpy(&PACKET_HEADER_START2,buf+index,sizeof(int));
+								index+= sizeof(int);
+
+								memcpy(&PACKET_LENGHT,buf+index,sizeof(int));
+								index += sizeof(int);
+								
+								memcpy(szID,buf+index,MAX_ID);
+								index+=MAX_ID;
+
+								memcpy(szMsg,buf+index,MAX_MSG);
+								index+=MAX_MSG;
+
+								printf("index:%d,아이디:%s,  메시지:%s,header1:%d ,header2:%d ,lenght:%d\n ",index,szID,szMsg,PACKET_HEADER_START1,PACKET_HEADER_START2,PACKET_LENGHT);
+								//512바이트는 채팅메시지를 읽으면됨.
+								
+								index+=1;
+								//index+=2;
+							//다 읽으면 인덱스 +2 ?nPacketType까지 생각해서
+					
+				}
+				printf("채팅 패킷 recv!!\n");
+			
+				break;
+
+			
+		}
+		
+		
+		buf[retval] = '\0';
+	}
+
+}

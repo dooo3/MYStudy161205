@@ -1,0 +1,32 @@
+------------------------------------------------UNION 
+두 테이블에서 똑같은 컴럼,또는 표현식의 값을 가져오는 SELECT 문을 각각작성한 후 전체에 대해 UNION을 하면 된다
+
+
+ex)
+SELECT region,count(*) FROM hot_members GROUP BY region
+UNION
+SELECT region,count(*) FROM members GROUP BY region
+
+그런데 실제로는 똑같은 컬럼,표현식이 아니라도 자료형과 순서만 맞으면 UNION을 사용 할 수 있다.
+
+
+select au_id,au_fname,phone,city,state,'author'as 구분
+from authors
+UNION ALL
+select pub_id,pub_name,null,city,state,'publisher'as 구분
+from publshers
+
+
+실제로 두 테이블은 별 상관이 없고 데이터도 그렇다. 그렇지만 일단 자료형과 순서 등이 일치하면 이와 같은
+유니언도 얼마든 가능하다.
+
+
+
+UNION ALL 을 지정하면 중복된 데이터를 모두 가져오며, 지정하지 않고 UNION만 사용 하면 중복 데이터는 제거된다.
+
+
+
+
+DISTINCT 중복을 제거한 열 출력
+
+select distinct szID from tb_account_cash --szID의 종류만큼 리턴

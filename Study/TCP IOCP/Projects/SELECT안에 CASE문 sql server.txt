@@ -1,0 +1,8 @@
+SELECT	title_id --AS '책번호'
+,		qty --AS '수량'
+,		CASE
+			WHEN qty>= 50 THEN 'A'
+			WHEN qty>= 30 THEN 'B'
+			ELSE 'C'
+		END --AS '등급'
+FROM pubs..sales

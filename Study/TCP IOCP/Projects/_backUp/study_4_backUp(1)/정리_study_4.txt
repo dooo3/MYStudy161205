@@ -1,0 +1,13 @@
+/*
+CSocket 클래스 제작.
+: 멤버변수 - SOCKET m_Socket, m_nSockNo //소켓번호는 유니크해야함 Rock 필요
+: 멤버함수 - GetIP(), SetSockNo() 등등
+
+CSocket 객체를 관리하는 stl문 사용.
+
+ex) 
+CSocket sock;
+sockList.push( sock );
+
+접속이 끊기면 list에서 삭제해주는거도 필요함
+*/

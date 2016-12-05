@@ -1,0 +1,46 @@
+
+
+microsoft - sql sever ( ms sql , sql server )
+ibm - 오라클
+
+?? - postgresql 
+?? - my sql     
+?? - maria db 
+...
+...
+
+
+
+---- 기본 -----
+테이블( 컬럼,로우 ) 만들기
+테이블 조회(select)
+테이블 업데이트(update)
+테이블 데이터 삭제(delete)
+테이블 삭제(drop)
++ 프로시저
+
+
+-- 프로시저 제작
+create proc_user_money_add
+@szID VARCHAR(20),
+@addMoney BIGINT,
+@nRet		INT OUTPUT
+AS
+
+UPDATE tb_user SET nMoney = nMoney + @addMoney WHERE szID = @szID
+
+SET @nRet = 1
+
+
+-- 프로시저 실행
+DECLARE @nRet INT
+EXEC proc_user_money_add '아이디', 1000000, @nRet OUTPUT
+--SELECT @nRet
+
+----- 기본2 -----
+indentity
+프로시저내 if문이나 while문 써보기
+
+----- 심화 -----
+테이블과 테이블끼리 JOIN문 
+인덱스, (세부적으로 공부해보기)

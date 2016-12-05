@@ -1,0 +1,19 @@
+recv send worker thread이렇게 3개 나누기
+
+recv쓰레드
+SELECT모델 - (1) SELECT함수호출 (2)상태변한소켓찾기 (3)해당소켓으로recv호출 (4)버퍼를 큐에 삽입
+IOCP모델 - (2)  GetQueuedCompletionStatus함수호출 (2) 신경쓸필요가X (3)해당소켓으로 WSARecv호출 (4)버퍼를 큐에 삽입
+
+worker쓰레드
+SELECT모델 - (1) 큐데이터 빼오기 (2)데이터 파씽( header, length ) (3) 파씽해온 데이터 첫바이트 패킷타입으로 swtich문 태우기.
+IOCP모델 - (1) 큐데이터 빼오기 (2)데이터 파씽( header, length ) (3) 파씽해온 데이터 첫바이트 패킷타입으로 swtich문 태우기.
+
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+함수포인터를 (unsigned int(__stdcall*)(void*))로 캐스팅...
+
+lll
+
+
+!!!!!

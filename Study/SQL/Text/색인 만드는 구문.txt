@@ -1,0 +1,20 @@
+
+--넌 클러스터 색인
+CREATE INDEX tb_noncl_Idx
+ON test_gold_tempdb.dbo.tb_test_user(VC_UID)
+
+
+
+--클러스터 색인
+CREATE UNIQUE CLUSTERED INDEX tb_cluster_Idx
+ON test_gold_tempdb.dbo.tb_test_user(NUM_NID)	
+
+
+-------------만약 색인을 만들려고 하는데.이미 중복된 데이터가 있어서 색인을 만드 수 없다면 어떻게 할까?
+중복된 데이터를 먼저 찾아야 한다. 어떻게 하면 쉽게 찾을 수 있을까? 예를 들어 sales 테이블에서
+stor_id에 대해 유일 색인을 만들려고 시도한다면 다음과 같은 방법으로 중복된 키값을 찾을 수 있다.
+
+SELECT stor_id, count(*)
+FROM sales
+GROUP BY stor_id
+HAVING count(*) > 1

@@ -1,0 +1,15 @@
+int output;
+SQLCHAR szName[20];
+SDWORD cbParam = SQL_NTS;
+
+
+SQLBindParameter(hStmt, 1, SQL_PARAM_INPUT		, SQL_C_CHAR, SQL_CHAR			, sizeof( szName ) + 1	, 0	, "미노"		, sizeof(szName)	, &cbParam);
+//SQLBindParameter(hStmt, 1, SQL_PARAM_INPUT		, SQL_C_CHAR, SQL_CHAR			, sizeof( szName ) + 1	, 0	, szName	, sizeof(szName)	, &cbParam);
+SQLBindParameter(hStmt, 2, SQL_PARAM_OUTPUT	, SQL_C_LONG, SQL_INTEGER		, 0								, 0	, &output	, 0						, &cbParam); 
+	
+retVal = SQLExecDirect(hStmt, (SQLCHAR *)"{ CALL proc_test_op (?,?) }", SQL_NTS); //인자 2개 output이 있다고 앞에 ?=를 붙이는게 아니다
+
+CheckODBC(hStmt);//에러확인
+
+printf("retval->%d \n",retVal); // 0 Not Error
+printf("output->%d \n",output); // 저장프로시저 2번째 인자

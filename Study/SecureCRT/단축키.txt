@@ -1,0 +1,9 @@
+
+·Î±×¾Æ¿ô Ctrl + d
+
+vi edit i, esc :wq 
+
+
+u ,ctrl + R
+
+ctrl + insert

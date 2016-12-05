@@ -1,0 +1,29 @@
+int CheckODBC(  SQLHANDLE hstmt ) 
+{ 
+	SQLCHAR		SqlState[6], Msg[512]; 
+	SQLINTEGER	NativeError; 
+	SQLSMALLINT	i=1, MsgLen; 
+	SQLRETURN	rc2; 
+ 
+	while(( rc2 = SQLGetDiagRec( SQL_HANDLE_STMT, hstmt, i, SqlState, &NativeError, Msg, sizeof(Msg), &MsgLen )) != SQL_NO_DATA ) 
+	{ 
+		if( rc2 == SQL_INVALID_HANDLE) { 
+			printf("no alloc handle\n");
+			return 0; 
+		}
+ 
+		printf("SQL ERROR State: %s, Native: %d, Msg:%s\r\n", SqlState, NativeError, Msg ); 
+		 
+		if( strcmp( (char*)SqlState, "08S01") == 0 ) 
+		{ 
+			printf( "SQL ERROR State: %s, Native: %d, Msg:%s\r\n", SqlState, NativeError, Msg ); 
+ 
+
+ 
+			return 1; 
+		} 
+		 
+		i++; 
+	} 
+	return 0; 
+}

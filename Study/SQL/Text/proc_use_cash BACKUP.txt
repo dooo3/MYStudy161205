@@ -1,0 +1,214 @@
+ALTER PROCEDURE proc_cash_use
+	@szID varchar(20),
+	@nUseCash INT,
+	@nRet INT OUTPUT -- 1:성공 0:실패 -1:free_cash 부족 -2:cash부족
+AS
+
+	SET @nRet = 0
+	DECLARE @tmpTotalCash INT
+	DECLARE @tmptbCount INT
+	DECLARE @tmpFreeCash INT
+	DECLARE @tmpCash INT
+	
+	
+	
+	
+	
+	-- 1.무료 캐쉬갯수/유료 캐쉬갯수 가져오기
+	-- 2.
+	
+	-- 충분하다.
+	IF nUseCash < nFreeCash
+	BEGIN
+		-- 제일오래된 놈먼저 사용하는거잖아.
+		
+	END
+	
+	ELSE
+	BEGIN
+		
+	END
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	-- 라이프 타임이 지난 것들 삭제
+	DELETE FROM tb_Account_cash WHERE szID = @szID AND (GETDATE() > dtFree_cash_lifeTime OR GETDATE() > dtCash_lifeTime) 
+	
+	
+	--무료의 첫번째 행이랑 유료의 첫번째 행을 구하려면 
+	SELECT @tmpCash = ISNULL(sum(nCash),0) , @tmpFreeCash = ISNULL(sum(nFree_cash),0) -- , @tmptbCount = nTbCount
+	FROM tb_Account_cash																			
+	WHERE szID = @szID		-- AND GETDATE() < cash_lifeTime	--유효기간보다 더 작은거 
+	
+	SELECT @tmpCash AS tmpCash , @tmpFreeCash AS tmpFreeCash , @nUseCash AS nUseCash ,@tmptbCount AS tmptbCount
+	
+	
+	
+	--SET @current_all_cash = @cash + @free_cash
+	--SELECT @current_all_cash
+	
+	
+	
+	-- 캐시 사용 시 무료 캐시를 먼저 사용하며, 기한이 얼마 남지 않은 캐시 먼저 사용한다.
+	
+	-- 1.val의 값이 무료캐시 + 유료캐시 의 값 보다 적은지 확인 (크면 에러)
+	
+	-- val랑 무료 캐시의 대소 비교를 하고 val만큼 무료 캐시(lifeTime이 가장 적은 순으로)를 삭제
+	
+	-- 만약 아직 val이 남았다면 유료 캐시(lifeTime이 가장 적은 순으로)를 삭제 
+	
+	-- 끝
+	
+	--sum(IF(조건내용,컬럼명,예외처리))
+	--sum((CASE 조건내용 THEN 컬럼명 ELSE 예외값 END))
+	
+	
+	IF @tmpFreeCash > 0 AND @nUseCash <= @tmpCash + @tmpFreeCash
+	BEGIN
+		
+		--만약 첫번째 행에 있는 free_Cash값이 @nUseCash값보다 더 크다면 업데이트 or 같다면 첫번째 행만 삭제
+		
+		SELECT TOP 1 @tmpFreeCash = nFree_cash ,@tmptbCount = nTbCount FROM tb_Account_cash WHERE szID = @szID order BY free_cash_lifeTime asc
+		
+		IF @tmpFreeCash >= @nUseCash -- 첫번째 행 무료캐시로 전부 지불가능
+		BEGIN
+			IF @tmpFreeCash = @nUseCash
+			BEGIN
+				--같으면 그냥 삭제
+				DELETE FROM tb_Account_cash WHERE nTbCount = @tmptbCount
+			END
+			ELSE
+			BEGIN --다르면 업데이트만하고끝
+			
+			UPDATE tb_Account_cash SET free_cash = free_cash - @nUseCash  WHERE nTbCount = @tmptbCount
+				SET @nUseCash = @nUseCash - @tmpFreeCash
+			END
+		
+		END ELSE -- 첫번째 행 무료캐시로 전부 지불 불가능(유료캐시로 넘어감_)
+		BEGIN
+		
+			--@nUseCash값이 첫행의 freeCash값 보다 작으면 실행되지 않는다
+			SELECT @tmptbCount=X.nTbCount , @tmpFreeCash=X.free_cash, @tmpTotalCash = ISNULL(sum(Y.free_cash),0) 
+			FROM tb_Account_cash X
+			INNER JOIN tb_Account_cash Y ON X.nTbCount >= Y.nTbCount 
+			GROUP BY X.nTbCount, X.free_cash
+			HAVING ISNULL(sum(Y.free_cash),0) <= @nUseCash					-- @nUseCash보다 작은값까지만 더하기...하면 남는 짜투리값을 어떻게 처리하지.......
+			
+			SELECT  @tmpTotalCash AS 'tmpTotalCash IF문 전', @tmptbCount AS 'IF문 전 tmptbCnt'
+			
+			DELETE FROM tb_Account_cash WHERE szID = @szID AND nTbCount <= @tmptbCount
+			
+			--SET @nUseCash = @nUseCash - @tmpTotalCash
+			
+			SET @nRemainUseCash = @nUseCash - @tmpTotalCash
+			
+			
+			IF -- 무료캐쉬가 충분하다.
+			BEGIN
+				UPDATE
+			END
+			ELSE
+			BEGIN
+				
+			END
+			
+			
+			
+			
+			
+			
+			IF @nUseCash = @tmpTotalCash --만약 nUseCash랑 토탈 캐시 같으면 삭제만 해주면 된다
+			BEGIN
+				--DELETE FROM tb_Account_cash WHERE nTbCount <= @tmptbCount
+				
+				
+			END
+			ELSE IF @nUseCash>@tmpTotalCash-- 아니라면 그전까지 삭제하고 짜투리값을 업데이트하면된다.
+			BEGIN
+				--일단 삭제를 진행하고(마지막 열을 뺀 나머지)
+				
+				DELETE FROM tb_Account_cash WHERE nTbCount <= @tmptbCount
+				
+				SET @nUseCash = @nUseCash - @tmpTotalCash
+				
+				--삭제하고 다음열의 값이 free캐시면 마저 삭제를 해주고 유료 캐시면 삭제 안하고 그냥 @nUseCash 값을 넘기면 될듯
+				DECLARE @nCheckCash INT
+				
+				SELECT @nCheckCash = cash FROM tb_Account_cash WHERE nTbCount = @tmptbCount + 1
+				
+				IF @nCheckCash > 0 --다음열이 유료캐시라면
+				BEGIN 
+					SELECT '유료캐시로 넘어감'
+				END 
+				ELSE --무료캐시라면
+				BEGIN
+					UPDATE tb_Account_cash SET free_cash = free_cash - @nUseCash  WHERE nTbCount = @tmptbCount + 1 --만약 비어있으면....
+					SET @nRet = @nUseCash + 12345
+				END
+			END
+		END
+	END
+	
+	
+	ELSE IF @tmpCash >= @nUseCash --유료캐시 사용
+	BEGIN
+	
+	
+		SELECT TOP 1 @tmpCash = cash ,@tmptbCount = nTbCount FROM tb_Account_cash WHERE szID = @szID order BY cash_lifeTime asc
+		
+		
+		IF @tmpCash >= @nUseCash --첫번째 행에 있는 유료캐시로 전부 지불 가능한경우
+		BEGIN
+			IF @tmpCash = @nUseCash
+			BEGIN
+				--같으면 그냥 삭제
+				DELETE FROM tb_Account_cash WHERE nTbCount = @tmptbCount
+			END
+			ELSE
+			BEGIN --작으면 업데이트만하고끝
+			
+			UPDATE tb_Account_cash SET cash = cash - @nUseCash  WHERE nTbCount = @tmptbCount
+				SET @nUseCash = @nUseCash - @tmpCash
+			END
+		
+		END ELSE
+		BEGIN --첫번째 행에 있는 유료캐시로 전부 지불 불가능한 경우
+			SELECT @tmptbCount=X.nTbCount , @tmpCash=X.cash, @tmpTotalCash = ISNULL(sum(Y.cash),0) 
+			FROM tb_Account_cash X
+			INNER JOIN tb_Account_cash Y ON X.nTbCount >= Y.nTbCount 
+			GROUP BY X.nTbCount,X.cash
+			HAVING ISNULL(sum(Y.cash),0) <= @nUseCash 
+			
+			IF @nUseCash = @tmpTotalCash --만약 nUseCash랑 토탈 캐시 같으면 삭제만 해주면 된다
+			BEGIN
+				DELETE FROM tb_Account_cash WHERE nTbCount <= @tmptbCount
+				
+				SET @nUseCash = @nUseCash - @tmpTotalCash
+			END ELSE IF @nUseCash  < @tmpTotalCash --유료캐시가 더 많으면
+			BEGIN
+				DELETE FROM tb_Account_cash WHERE nTbCount < @tmptbCount -- 그전까지 삭제하고 마지막nTbCount는 업데이트
+				
+				UPDATE tb_Account_cash SET cash = cash - @nUseCash  WHERE nTbCount = @tmptbCount  
+					
+				SET @nRet = @nUseCash + 12345
+			END
+		
+		END
+		
+	
+	END
+	
+	
+GO

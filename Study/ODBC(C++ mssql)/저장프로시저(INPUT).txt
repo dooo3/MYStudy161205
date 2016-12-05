@@ -1,0 +1,29 @@
+int nId;
+SQLCHAR szName[20];
+//SQLINTEGER lNum1,lNum2;
+
+
+	
+SQLBindCol(hStmt, 1, SQL_INTEGER, &nId, sizeof(nId), &lNum1);
+SQLBindCol(hStmt, 2, SQL_C_CHAR, szName, sizeof(szName), &lNum2);
+
+retVal  = SQLExecDirect(hStmt,(SQLCHAR *)"SELECT top 10 nId,szName FROM a",SQL_NTS); 	//select문
+//retVal = SQLExecDirect(hStmt,(SQLCHAR *)"{CALL test_ggg}", SQL_NTS);			//프로시저
+	
+CheckODBC(hStmt);
+
+printf("retval->%d \n",retVal); // 0 not Error
+
+
+if (retVal != SQL_SUCCESS && retVal != SQL_SUCCESS_WITH_INFO)
+{
+		
+}
+else
+{
+	while(SQLFetch(hStmt) != SQL_NO_DATA)
+	{
+		printf("번호->%d \n",nId);
+		printf("이름->%s \n",szName);
+	}
+}

@@ -1,0 +1,32 @@
+/*
+예를들어 
+WINDOWS : INT64
+LINUX : INTEGER64
+
+#ifdef WIN32
+	TYPEDEF INT64 _INT64;
+#else
+	TYPEDEF INTEGER64 _INT64;
+#endif
+*/
+
+
+/*
+
+#ifdef ~ #endif
+컴파일 할 때
+
+#define MYDEF               /* MYDEF는 값은 가지지 않았지만 어쨋든 정의는 되었다 */
+
+#ifdef YOURDEF              /* 만약 YOURDEF가 정의되어 있다면... */
+
+    #define BASE 10         /* BASE == 10 */
+
+#elif MYDEF                 /* 그외에 MYDEF가 정의되었다면... */
+
+    #define BASE 2       /* BASE == 2 */
+
+#endif
+와 같이 쓰면 BASE는 상수 2로 치환되어 전처리기가 컴파일러에게 넘겨준다.
+
+*/

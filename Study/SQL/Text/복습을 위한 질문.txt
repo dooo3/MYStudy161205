@@ -1,0 +1,44 @@
+4.다음과 같은 테이블에  name + company 컬럼에 유일 색인을 만들고자 한다. 중복된 데이터를 찾아내는 sql 문장을 
+작성해 보자
+
+원 테이블
+
+id	company		name		다른 컬럼들...
+1	정아		강주희	
+2	정아		강주희
+3	안터넷 경매	이재훈
+
+나와야 하는 결과
+
+company		name		개수
+정아		강주희		2
+
+
+
+5. 위의 테이블에서 중복되지 않은 데이터만 찾아서 동일한 스키마의 새로운 테이블로 INSERT하는 SQL 문장을 작성해 보자.
+
+
+원 테이블
+id	company		name		다른 컬럼들...
+1	정아		강주희	
+3	인터넷 경매	이재훈
+
+
+정답
+
+4. GROUP BY와 HAVING을 사용한다
+	
+	SELECT name,company,count(company)
+	FROM dupTable
+	GROUP BY name, company
+	HAVING count(company)>1
+5. selfjoin을 이용
+	
+	DELETE dupTable
+	WHERE id in(
+		SELECT t2.id
+		FROM dupTable t1, dupTable t2
+		WHERE t1.name = t2.name
+		 AND t1.company \ t2.company
+		AND t1.id < t2.id
+)

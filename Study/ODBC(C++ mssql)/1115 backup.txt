@@ -1,0 +1,55 @@
+	/*
+	int nId,output;
+	SQLCHAR szName[20];
+	//SQLINTEGER lNum1,lNum2,lNum3;
+	SDWORD cbParam = SQL_NTS;
+	output = 0;
+	
+	//SQLBindCol(hStmt, 1, SQL_INTEGER, &nId, sizeof(nId), &lNum1);
+	//SQLBindCol(hStmt, 2, SQL_C_CHAR, szName, sizeof(szName), &lNum2);
+
+	//retVal  = SQLExecDirect(hStmt,(SQLCHAR *)"SELECT top 10 nId,szName FROM a",SQL_NTS);
+
+	//retVal = SQLExecDirect(hStmt,(SQLCHAR *)"{CALL test_ggg}", SQL_NTS);
+
+	
+	SQLBindParameter(hStmt, 1, SQL_PARAM_INPUT		, SQL_C_CHAR, SQL_CHAR			, sizeof( szName ) + 1	, 0	, "미노"		, sizeof(szName)	, &cbParam);
+	//SQLBindParameter(hStmt, 1, SQL_PARAM_INPUT		, SQL_C_CHAR, SQL_CHAR			, sizeof( szName ) + 1	, 0	, szName	, sizeof(szName)	, &cbParam);
+	SQLBindParameter(hStmt, 2, SQL_PARAM_OUTPUT	, SQL_C_LONG, SQL_INTEGER		, 0								, 0	, &output	, 0						, &cbParam); 
+	
+	retVal = SQLExecDirect(hStmt, (SQLCHAR *)"{ CALL proc_test_op (?, ?) }", SQL_NTS);
+	//if( retVal ==SQL_SUCCESS )
+
+	CheckODBC(hStmt);
+
+	printf("retval->%d \n",retVal);
+	printf("output->%d \n",output);
+
+
+	//retVal = SQLExecDirect(hStmt,(SQLCHAR *)"{ ?= CALL test_ggg}", SQL_NTS);
+	//proc_test_op 아이디를 넣으면 nId를 OUTPUT으로 내주는 저장 프로시저
+	
+	
+	if (retVal != SQL_SUCCESS && retVal != SQL_SUCCESS_WITH_INFO)
+	{
+		
+	}
+	else
+	{
+		while(SQLFetch(hStmt) != SQL_NO_DATA)
+		{
+			//printf("번호->%d \n",nId);
+			//printf("이름->%s \n",szName);
+		}
+	}
+
+
+	while(SQLFetch(hStmt) != SQL_NO_DATA)
+	{
+		printf("번호->%d \n",nId);
+		printf("이름->%s \n",szName);
+	};
+
+
+	if(hStmt) SQLCloseCursor(hStmt);
+	*/
