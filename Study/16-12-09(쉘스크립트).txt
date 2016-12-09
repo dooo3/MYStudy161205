@@ -1,0 +1,34 @@
+
+#!/bin/sh
+BACK_DIR=$(cd "$(dirname "$0")" && pwd)
+LOG_DIR="$BACK_DIR/Log"
+LOG="$LOG_DIR"/$(date "+%y-%m-%d")-log.txt
+if [ ! -d "$LOG_DIR" ]
+then
+        mkdir "$LOG_DIR"
+fi
+echo "------------------------------------------------">>${LOG}
+echo "back begin : $(date "+%Y-%m-%d %H:%M:%S")">>${LOG}
+
+today_date=$(date "+%Y%m%d")
+del_date=$(date '+%Y%m%d' -d '8 day ago')
+back_list=$(find $BACK_DIR ! \( -path "$LOG_DIR" -prune \) -type f -newermt $today_date 2> /dev/null )
+if [ back_list ]
+then
+        tar zcf backup$today_date.tar.gz $back_list
+        {
+                echo cd mi/db_backup/board
+                echo rm backup$del_date.tar.gz 2> /dev/null
+                echo binary
+                echo put backup$today_date.tar.gz
+                echo quit
+        } | ncftp -u mi -p 5A9aP~t* 211.196.247.35
+        rm backup$today_date.tar.gz
+else
+        {
+                echo cd mi/db_backup/board
+                echo rm backup$del_date.tar.gz 
+                echo quit
+        } | ncftp -u mi -p 5A9aP~t* 211.196.247.35
+fi
+"back_board.sh" 46L, 1261C   
