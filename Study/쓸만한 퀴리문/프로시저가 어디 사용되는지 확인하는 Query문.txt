@@ -1,0 +1,11 @@
+##########mssql
+
+SELECT ROUTINE_NAME  
+        FROM INFORMATION_SCHEMA.ROUTINES 
+    WHERE ROUTINE_DEFINITION LIKE '%찾을문자열%' 
+        AND ROUTINE_TYPE='PROCEDURE' 
+        order by ROUTINE_NAME 
+
+##########postgresql
+
+SELECT * FROM pg_proc WHERE prosrc LIKE '%찾을문자열%'
